@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -24,10 +25,15 @@ import java.io.IOException;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final UserDetailsService userDetailsService;
+
+    public SecurityConfig(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        final Logger log = LoggerFactory.getLogger(getClass());
-
         // 인증/인가 설정
         http
                 .authorizeRequests()
@@ -75,6 +81,13 @@ public class SecurityConfig {
                     }
                 })
                 .deleteCookies("remember-me");
+
+        // Remember me 설정
+        http
+                .rememberMe()
+                .rememberMeParameter("remember")
+                .tokenValiditySeconds(3600)
+                .userDetailsService(userDetailsService);
 
         return http.build();
     }
