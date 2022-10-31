@@ -35,11 +35,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 인증/인가 설정
-        http
-                .authorizeRequests()
+        http.authorizeRequests()
                 .anyRequest().authenticated();
-        http
-                .formLogin()
+
+        http.formLogin()
 //                .loginPage("/loginPage")
                 .defaultSuccessUrl("/")
                 .failureUrl("/login")
@@ -63,8 +62,7 @@ public class SecurityConfig {
                 }).permitAll();
 
         // Logout 설정
-        http
-                .logout()
+        http.logout()
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login")
                 .addLogoutHandler(new LogoutHandler() {
@@ -83,11 +81,21 @@ public class SecurityConfig {
                 .deleteCookies("remember-me");
 
         // Remember me 설정
-        http
-                .rememberMe()
+        http.rememberMe()
                 .rememberMeParameter("remember")
                 .tokenValiditySeconds(3600)
                 .userDetailsService(userDetailsService);
+
+        // 동시 세션 제어 설정
+        http.sessionManagement()
+                .maximumSessions(1) // 세션의 최대 허용 개수는 1개
+                // true -> 동시 로그인 차단, false -> 기존 세션 만료 (default)
+//                .maxSes sionsPreventsLogin(true);
+                .maxSessionsPreventsLogin(false);
+
+        // 세션 고정 보호 설정
+        http.sessionManagement()
+                .sessionFixation().changeSessionId() ;
 
         return http.build();
     }
